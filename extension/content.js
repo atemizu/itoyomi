@@ -108,7 +108,7 @@
 
   const CATS = ['attack', 'divisive', 'quarrel'];
   const CAT_LABEL = { attack: '攻撃・侮辱', divisive: '煽り・分断', quarrel: '口論' };
-  const DEFAULTS = { enabled: true, threshold: 0.7, mode: 'collapse', cats: { attack: true, divisive: true, quarrel: true }, generic: true, nicoDanmaku: true, exclude: globalThis.JEV_DEFAULT_EXCLUDE };
+  const DEFAULTS = { enabled: true, threshold: globalThis.JEV_THRESHOLD, mode: 'collapse', cats: { attack: true, divisive: true, quarrel: true }, generic: true, nicoDanmaku: true, exclude: globalThis.JEV_DEFAULT_EXCLUDE };
   const MAX_TEXT = 3000;
   const DWELL_MS = 400; // 画面の近くにこれだけ留まったら送る（勢いよく通り過ぎた分は送らない）
   const SETTLE_MS = 1500; // 文が書き換わった要素は、これだけ落ち着いてから送る
@@ -560,7 +560,7 @@
     if (site && site.nico && isTop) nicoPostBlock();
   }, true);
 
-  const merge = (s) => ({ ...DEFAULTS, ...(s || {}), cats: { ...DEFAULTS.cats, ...((s || {}).cats || {}) }, exclude: globalThis.jevExclude(s) });
+  const merge = (s) => ({ ...DEFAULTS, ...(s || {}), cats: { ...DEFAULTS.cats, ...((s || {}).cats || {}) }, exclude: globalThis.jevExclude(s), threshold: globalThis.jevThreshold(s) });
   chrome.storage.local.get('settings').then((s) => {
     settings = merge(s.settings);
     if (!site && !hostIsPrivate && document.getElementById('mastodon')) site = { rules: MASTODON }; // Mastodon はホストが無数にあるので画面で見分ける

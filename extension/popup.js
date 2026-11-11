@@ -85,7 +85,7 @@ const later = (name, fn) => { clearTimeout(timers[name]); timers[name] = setTime
 const now = (name) => clearTimeout(timers[name]);
 $('model').oninput = (e) => later('model', () => { const v = e.target.value.trim(); if (v) save({ model: v }); });
 $('model').onchange = (e) => now('model') || save({ model: e.target.value.trim() || DEFAULTS.model }).then(show);
-$('threshold').oninput = (e) => { save({ threshold: Number(e.target.value) }); $('thv').textContent = `${Math.round(e.target.value * 100)}%`; };
+$('threshold').oninput = (e) => { save({ threshold: Number(e.target.value), thUser: true }); $('thv').textContent = `${Math.round(e.target.value * 100)}%`; };
 $('mode').onchange = (e) => save({ mode: e.target.value });
 const limitOf = (v) => { const n = Math.floor(Number(v)); return v.trim() !== '' && Number.isFinite(n) && n > 0 ? n : DEFAULTS.dailyLimit; };
 const keepLimit = (v) => freeTier && limitOf(v) >= RELAY_DAILY_CAP && settings.dailyLimit >= RELAY_DAILY_CAP; // 無料枠で上限以上を打った: 自分のキー用に取ってある数は変えない

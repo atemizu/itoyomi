@@ -23,7 +23,9 @@ test('答えの読み取りと判定', () => {
   assert.deepEqual(verdict(s, DEFAULTS), { hide: true, top: 'attack', score: 0.9 });
   assert.equal(verdict(s, { ...DEFAULTS, cats: { ...DEFAULTS.cats, attack: false } }).hide, false);
   assert.equal(verdict(s, { ...DEFAULTS, threshold: 0.95 }).hide, false);
-  assert.equal(verdict(parseAnswers(body(0.7, 0, 0)), DEFAULTS).hide, true); // ちょうどしきい値
+  assert.equal(DEFAULTS.threshold, 0.5);
+  assert.equal(verdict(parseAnswers(body(0.5, 0, 0)), DEFAULTS).hide, true); // ちょうどしきい値
+  assert.equal(verdict(parseAnswers(body(0.49, 0.2, 0.1)), DEFAULTS).hide, false);
 });
 
 test('形の違う応答は例外（黙って 0 点にしない）', () => {
@@ -215,4 +217,14 @@ test('汎用検出: 短い暴言は判定に回し、2〜3 字の部品名は回
   assert.equal(ok('Read more', 1.6), false);
   assert.equal(ok('もっと見る', 1.6), false);
   assert.equal(ok('大臣の発言に批判が相次ぐ', 2.5), true);
+});
+
+test('しきい値の既定は 50%。印の無い保存済みの 0.7 は既定のままと見なす', async () => {
+  const { mergeSettings } = await import('../jev.js');
+  assert.equal(mergeSettings(undefined).threshold, 0.5);
+  assert.equal(mergeSettings({ mode: 'remove' }).threshold, 0.5);
+  assert.equal(mergeSettings({ threshold: 0.7 }).threshold, 0.5); // 3.0.1 までに丸ごと保存された既定値
+  assert.equal(mergeSettings({ threshold: 0.7, thUser: true }).threshold, 0.7); // 3.0.2 以降に自分で選んだ 70%
+  assert.equal(mergeSettings({ threshold: 0.85 }).threshold, 0.85); // 既定と違う値は自分で選んだもの
+  assert.equal(mergeSettings({ threshold: 0.3 }).threshold, 0.3);
 });

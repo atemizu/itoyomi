@@ -13,6 +13,10 @@ globalThis.JEV_DEFAULT_EXCLUDE = [
   'mufg.jp', 'smbc.co.jp', 'mizuhobank.co.jp', 'sbisec.co.jp', 'monex.co.jp', 'rakuten-sec.co.jp',
   'smbc-card.com', 'rakuten-card.co.jp', 'saisoncard.co.jp', 'nta.go.jp', 'nenkin.go.jp',
 ];
+// 既定のしきい値。3.0.1 までは 0.7 だった。設定は丸ごと保存されるので、保存済みの 0.7 が「既定のまま」か「自分で選んだ」かは
+// 区別できない。3.0.2 からは、つまみを動かしたときに thUser の印を付ける。印の無い 0.7 は既定のままと見なして、新しい既定に合わせる。
+globalThis.JEV_THRESHOLD = 0.5;
+globalThis.jevThreshold = (s) => (s && typeof s.threshold === 'number' && (s.thUser || s.threshold !== 0.7) ? s.threshold : globalThis.JEV_THRESHOLD);
 globalThis.JEV_DEFAULT_BASE = 34; // 2.x までの既定の数（exSeen を持たない古い設定は、ここまでを見たものとして扱う）
 // 保存された一覧に、その人がまだ見ていない既定を足す（自分で外した既定は戻さない）
 globalThis.jevExclude = (s) => {

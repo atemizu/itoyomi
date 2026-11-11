@@ -12,7 +12,7 @@ export const PRICE_PER_MTOK = 0.042; // 入力 100 万トークンあたりの�
 export const DEFAULTS = {
   enabled: true,
   model: 'jev-latest',
-  threshold: 0.7,
+  threshold: globalThis.JEV_THRESHOLD,
   mode: 'collapse', // 'collapse' = 1 行にたたむ / 'remove' = 跡形なく消す
   cats: { attack: true, divisive: true, quarrel: true },
   dailyLimit: 20000,
@@ -23,7 +23,7 @@ export const DEFAULTS = {
 
 export function mergeSettings(s) {
   s = s || {};
-  return { ...DEFAULTS, ...s, cats: { ...DEFAULTS.cats, ...(s.cats || {}) }, exclude: globalThis.jevExclude(s) };
+  return { ...DEFAULTS, ...s, cats: { ...DEFAULTS.cats, ...(s.cats || {}) }, exclude: globalThis.jevExclude(s), threshold: globalThis.jevThreshold(s) };
 }
 
 export const CATS = ['attack', 'divisive', 'quarrel'];
