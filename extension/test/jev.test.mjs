@@ -104,20 +104,21 @@ test('無料枠の残りはヘッダから', () => {
 });
 
 // background.js を偽の chrome / fetch で動かして、経路・休止・表示用の値を確かめる
-async function boot({ apiKey = '', responder }) {
-  const local = { apiKey, settings: {} }, session = {};
+async function boot({ apiKey = '', responder, settings = {} }) {
+  const local = { apiKey, settings }, session = {};
   const calls = [];
   const area = (o) => ({ get: async () => ({ ...o }), set: async (v) => { Object.assign(o, v); }, remove: async (k) => { delete o[k]; } });
   let onMsg = null; const onChanged = [];
   globalThis.chrome = {
     storage: { local: area(local), session: area(session), onChanged: { addListener: (f) => onChanged.push(f) } },
-    runtime: { onMessage: { addListener: (f) => { onMsg = f; } } },
+    runtime: { onMessage: { addListener: (f) => { onMsg = f; } }, onInstalled: { addListener() {} }, getURL: (p) => p },
+    tabs: { create() {} },
     action: { setBadgeText() {}, setBadgeBackgroundColor() {} },
   };
   globalThis.indexedDB = { open() { const r = {}; queueMicrotask(() => r.onerror && r.onerror()); return r; } }; // 覚え書きは使わない
   globalThis.fetch = async (url, init) => { calls.push({ url, init }); return responder(url, init, calls.length); };
   await import(`../background.js?t=${Math.random()}`);
-  const ask = (msg) => new Promise((res) => onMsg(msg, { url: 'https://example.org/' }, res));
+  const ask = (msg, url = 'https://example.org/') => new Promise((res) => onMsg(msg, { url }, res));
   const setKey = (v) => { local.apiKey = v; for (const f of onChanged) f({ apiKey: { newValue: v } }, 'local'); };
   return { ask, calls, local, session, setKey };
 }
@@ -227,4 +228,29 @@ test('しきい値の既定は 50%。印の無い保存済みの 0.7 は既定�
   assert.equal(mergeSettings({ threshold: 0.7, thUser: true }).threshold, 0.7); // 3.0.2 以降に自分で選んだ 70%
   assert.equal(mergeSettings({ threshold: 0.85 }).threshold, 0.85); // 既定と違う値は自分で選んだもの
   assert.equal(mergeSettings({ threshold: 0.3 }).threshold, 0.3);
+});
+
+test('同意の前は、ページの文を一切送らない', async () => {
+  const b = await boot({ responder: () => ok() });
+  const r = await b.ask({ type: 'judge', text: 'ページの文' });
+  assert.ok(r.error); assert.equal(r.fatal, true);
+  assert.equal(b.calls.length, 0);
+});
+
+test('同意のあとは送る。使わないサイトからは送らない', async () => {
+  const b = await boot({ responder: () => ok(), settings: { consent: true, exclude: ['example.net'] } });
+  const r = await b.ask({ type: 'judge', text: 'ページの文 2' });
+  assert.equal(r.scores.attack, 0.9);
+  assert.equal(b.calls.length, 1);
+  const r2 = await b.ask({ type: 'judge', text: 'ページの文 3' }, 'https://mail.example.net/x');
+  assert.ok(r2.error); assert.equal(b.calls.length, 1);
+});
+
+test('使うサイト: 既定は対応サイト。足したものは保たれ、消した既定は戻らない', async () => {
+  const { mergeSettings, DEFAULTS } = await import('../jev.js');
+  const D = globalThis.JEV_DEFAULT_SITES;
+  assert.deepEqual(mergeSettings(undefined).sites, D);
+  assert.ok(D.includes('x.com') && D.includes('youtube.com') && D.includes('nicovideo.jp') && D.includes('reddit.com'));
+  assert.deepEqual(mergeSettings({ sites: ['example.org'], siSeen: D }).sites, ['example.org']);
+  assert.equal(DEFAULTS.consent, false);
 });

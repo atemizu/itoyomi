@@ -104,7 +104,7 @@ chrome.storage.onChanged.addListener((ch, area) => {
 });
 
 function badge() { // オフのときはアイコンに出す
-  chrome.action.setBadgeText({ text: settings.enabled ? '' : 'OFF' });
+  chrome.action.setBadgeText({ text: !settings.consent ? '!' : settings.enabled ? '' : 'OFF' });
   chrome.action.setBadgeBackgroundColor({ color: '#888' });
 }
 
@@ -273,7 +273,7 @@ async function judge(text, useCache = true, low = false) {
 
 const hostMatch = (h, x) => x && (h === x || h.endsWith('.' + x));
 function senderBlocked(sender) { // ページ側の判断の念押し
-  if (!settings.enabled) return true;
+  if (!settings.enabled || !settings.consent) return true;
   try {
     const h = new URL(sender.url).hostname;
     return !!h && settings.exclude.some((x) => hostMatch(h, x));
@@ -305,3 +305,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
 });
 
 load(); // 起動時にアイコンの表示を合わせる
+
+// 入れた直後に、はじめの説明（同意）を開く。同意するまでは何も送らない
+chrome.runtime.onInstalled.addListener((d) => {
+  if (d.reason === 'install') chrome.tabs.create({ url: chrome.runtime.getURL('popup.html') });
+});

@@ -11,19 +11,21 @@ export const PRICE_PER_MTOK = 0.042; // 入力 100 万トークンあたりの�
 
 export const DEFAULTS = {
   enabled: true,
+  consent: false, // はじめの説明に同意するまでは、文を一切送らない
   model: 'jev-latest',
   threshold: globalThis.JEV_THRESHOLD,
   mode: 'collapse', // 'collapse' = 1 行にたたむ / 'remove' = 跡形なく消す
   cats: { attack: true, divisive: true, quarrel: true },
   dailyLimit: 20000,
-  generic: true, // 対応サイト以外の全ページにも適用する
+  sites: globalThis.JEV_DEFAULT_SITES, // 使うサイト（とその下位）。既定は対応サイト。自由に足せる
+  generic: true, // 「使うサイト」以外の全ページにも適用する
   nicoDanmaku: true, // ニコニコ動画の流れるコメントも判定する
   exclude: globalThis.JEV_DEFAULT_EXCLUDE, // このホスト（とその下位）では何もしない
 };
 
 export function mergeSettings(s) {
   s = s || {};
-  return { ...DEFAULTS, ...s, cats: { ...DEFAULTS.cats, ...(s.cats || {}) }, exclude: globalThis.jevExclude(s), threshold: globalThis.jevThreshold(s) };
+  return { ...DEFAULTS, ...s, cats: { ...DEFAULTS.cats, ...(s.cats || {}) }, exclude: globalThis.jevExclude(s), sites: globalThis.jevSites(s), threshold: globalThis.jevThreshold(s) };
 }
 
 export const CATS = ['attack', 'divisive', 'quarrel'];

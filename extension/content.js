@@ -108,7 +108,7 @@
 
   const CATS = ['attack', 'divisive', 'quarrel'];
   const CAT_LABEL = { attack: '攻撃・侮辱', divisive: '煽り・分断', quarrel: '口論' };
-  const DEFAULTS = { enabled: true, threshold: globalThis.JEV_THRESHOLD, mode: 'collapse', cats: { attack: true, divisive: true, quarrel: true }, generic: true, nicoDanmaku: true, exclude: globalThis.JEV_DEFAULT_EXCLUDE };
+  const DEFAULTS = { enabled: true, consent: false, threshold: globalThis.JEV_THRESHOLD, mode: 'collapse', cats: { attack: true, divisive: true, quarrel: true }, generic: true, nicoDanmaku: true, exclude: globalThis.JEV_DEFAULT_EXCLUDE, sites: globalThis.JEV_DEFAULT_SITES };
   const MAX_TEXT = 3000;
   const DWELL_MS = 400; // 画面の近くにこれだけ留まったら送る（勢いよく通り過ぎた分は送らない）
   const SETTLE_MS = 1500; // 文が書き換わった要素は、これだけ落ち着いてから送る
@@ -159,7 +159,9 @@
 
   const hostMatch = (h, x) => x && (h === x || h.endsWith('.' + x));
   const excluded = () => (settings.exclude || []).some((x) => hostMatch(host, x) || hostMatch(topHost, x));
-  const active = () => settings.enabled && !excluded();
+  // 「使うサイト」に入っているか（枠の中は、枠か親のどちらかが入っていればよい）
+  const listed = () => (settings.sites || []).some((x) => hostMatch(host, x) || hostMatch(topHost, x));
+  const active = () => settings.enabled && settings.consent && !excluded() && (listed() || settings.generic);
   // ログイン画面らしさ: 見えているパスワード欄がある（1 秒だけ覚えておく）
   let pwAt = 0, pwSeen = false;
   function loginPage() {
@@ -172,8 +174,9 @@
     return false;
   }
   // 汎用検出: 対応サイトでない・除外でない・個人的らしいホストでない・ログイン画面でない・親と別オリジンの枠（広告など）でない
-  const genericStatic = () => active() && settings.generic && (!site || site.generic) && sameOriginAsTop
-    && !hostIsPrivate && document.designMode !== 'on' && !(document.body && document.body.isContentEditable); // 枠まるごとのエディタ
+  // 自分で「使うサイト」に足した所は、ホスト名からの推測（銀行・ログインらしい）より本人の指定を優先する。パスワード欄の確認は残す
+  const genericStatic = () => active() && (!site || site.generic) && sameOriginAsTop
+    && (!hostIsPrivate || listed()) && document.designMode !== 'on' && !(document.body && document.body.isContentEditable); // 枠まるごとのエディタ
   const genericOk = () => genericStatic() && !loginPage();
   const allowed = (st) => (st.opt.generic ? genericOk() : active());
 
@@ -560,7 +563,7 @@
     if (site && site.nico && isTop) nicoPostBlock();
   }, true);
 
-  const merge = (s) => ({ ...DEFAULTS, ...(s || {}), cats: { ...DEFAULTS.cats, ...((s || {}).cats || {}) }, exclude: globalThis.jevExclude(s), threshold: globalThis.jevThreshold(s) });
+  const merge = (s) => ({ ...DEFAULTS, ...(s || {}), cats: { ...DEFAULTS.cats, ...((s || {}).cats || {}) }, exclude: globalThis.jevExclude(s), sites: globalThis.jevSites(s), threshold: globalThis.jevThreshold(s) });
   chrome.storage.local.get('settings').then((s) => {
     settings = merge(s.settings);
     if (!site && !hostIsPrivate && document.getElementById('mastodon')) site = { rules: MASTODON }; // Mastodon はホストが無数にあるので画面で見分ける

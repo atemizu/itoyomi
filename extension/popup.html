@@ -26,15 +26,24 @@
 <body>
 <header>
   <h1 id="name"></h1>
-  <label><input type="checkbox" id="enabled"> 有効</label>
+  <label id="enabledRow"><input type="checkbox" id="enabled"> 有効</label>
 </header>
 
-<section id="siteRow" hidden>
-  <label><input type="checkbox" id="siteOff"> <b id="siteName"></b> では使わない</label>
+<section id="consent" hidden>
+  <div class="cap">はじめに</div>
+  <p style="margin:0 0 6px">itoyomi は、開いたページの画面の近くにある文を、攻撃・煽り・口論の判定のために外部へ送ります。</p>
+  <ul style="margin:0 0 8px;padding-left:18px">
+    <li>送り先: 開発者が運営する中継を経由して TypeSafe（自分の API キーを入れた場合は直接 TypeSafe）</li>
+    <li>使い道は判定だけです。中継は文を保存しない作りです</li>
+    <li>メール・銀行・AI チャットなどは既定で対象外です（設定で追加できます）</li>
+  </ul>
+  <div class="row"><button id="agree">同意して始める</button><a href="https://atemizu.github.io/itoyomi/privacy.html" target="_blank" rel="noopener">くわしく</a></div>
+  <div class="dim" style="margin-top:6px">同意するまで、文は一切送りません。</div>
 </section>
 
-<section class="dim" id="notice">
-  実験として開発者が利用料を負担しています。予告なく終了することがあります。画面に出た文は、運営者の中継を経由して TypeSafe に送られます。開発者が内容を見られないよう、中継は文を保存せず、ログにも出さない作りにしています。拡張機能と中継のコードは GitHub で公開しています。コードは AI (Claude) が書いたもので、開発者が全行を人手で検証したわけではありません。誤判定があります。自分の API キーを入れると、この中継は通りません。
+<div id="main" hidden>
+<section id="siteRow" hidden>
+  <label><input type="checkbox" id="siteOff"> <b id="siteName"></b> では使わない</label>
 </section>
 
 <section>
@@ -70,8 +79,11 @@
 
 <section>
   <div class="cap">適用する範囲</div>
-  <label><input type="checkbox" id="generic"> 対応サイト以外の全ページにも適用する</label>
-  <div class="dim">対応サイト: X・Bluesky・YouTube・ニコニコ・Reddit・Yahoo!ニュース・5ch・Hacker News・Mastodon・Threads など。それ以外は本文らしい段落を自動で拾います。ログイン画面と、銀行・メールらしいホストでは自動では拾いません。</div>
+  <div class="cap" style="font-weight:normal">使うサイト（1 行に 1 ホスト。自由に足せます）</div>
+  <textarea id="sites" spellcheck="false" style="height:72px"></textarea>
+  <div class="dim">はじめから入っているのは、投稿を 1 件ずつ正確に拾える対応サイトです（Mastodon は画面で見分けます）。足したサイトでは、本文らしい段落を自動で拾います。</div>
+  <label style="margin-top:6px"><input type="checkbox" id="generic"> 上の一覧以外の全ページにも適用する</label>
+  <div class="dim">パスワード欄が見えるページと、名前が銀行・ログインらしいサイトは自動では拾いませんが、これは推測なので漏れがあります。人に見せたくない文面が出るサイトは「使わないサイト」に足してください。</div>
   <label style="margin-top:6px"><input type="checkbox" id="nicoDanmaku"> ニコニコ動画の流れるコメントも判定する</label>
   <div class="cap" style="margin-top:8px">使わないサイト（1 行に 1 ホスト）</div>
   <textarea id="exclude" spellcheck="false" style="height:72px"></textarea>
@@ -84,9 +96,10 @@
 </section>
 
 <section class="dim">
-  判定のため、開いたページで画面の近く（上下 1 画面ぶん）にある投稿・段落の文（1 件 3,000 字まで。たたまれて見えていない部分を含むことがあります）が送られます。送り先は、無料枠では開発者の中継 → TypeSafe (api.typesafe.ai)、自分のキーでは直接 TypeSafe です。ページの URL・タイトル・Cookie・入力欄の中身や、投稿者名などの付随情報を別に付けて送ることはありません。ただし、画面に出ている文そのものに名前などが含まれていれば、文の一部として送られます。無料枠では、上限の管理のために、拡張機能ごとの乱数の ID（入れ直すまで同じ）と、IP アドレスから日ごとに作った値（元の IP は保存しません）を中継が使います。メール・チャット・AI チャットなどの既定の「使わないサイト」は常に対象外です。それ以外のページの自動検出では、パスワード欄が見えているページと、ホスト名が銀行・ログインらしいサイトも拾いません（すべては網羅できません）。TypeSafe 社とは無関係の非公式の拡張機能です。人に見せたくない文面が出るサイトは「使わないサイト」に足してください。
-  <button id="clear" style="margin-top:6px">判定のキャッシュを消す</button>
+  <a href="https://atemizu.github.io/itoyomi/privacy.html" target="_blank" rel="noopener">送られる文とその扱い</a> ・ TypeSafe 社とは無関係の非公式の拡張機能です。
+  <div><button id="clear" style="margin-top:6px">判定のキャッシュを消す</button></div>
 </section>
+</div>
 <script type="module" src="popup.js"></script>
 </body>
 </html>

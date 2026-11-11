@@ -8,6 +8,7 @@ document.title = $('name').textContent = chrome.runtime.getManifest().name;
 
 async function save(patch) {
   settings = { ...settings, ...patch };
+  if (patch.sites) settings.siSeen = globalThis.JEV_DEFAULT_SITES;
   if (patch.exclude) settings.exSeen = globalThis.JEV_DEFAULT_EXCLUDE; // いまの既定は見た（外した既定を、あとで勝手に戻さない）
   await chrome.storage.local.set({ settings });
 }
@@ -22,6 +23,7 @@ function showLimit() {
       : `無料枠の上限は 1 日 ${RELAY_DAILY_CAP} 件です。`;
 }
 function show() {
+  $('consent').hidden = settings.consent; $('main').hidden = $('enabledRow').hidden = !settings.consent; // 同意の前は説明だけを出す
   $('enabled').checked = settings.enabled;
   if (document.activeElement !== $('model')) $('model').value = settings.model;
   $('threshold').value = settings.threshold;
@@ -32,6 +34,7 @@ function show() {
   $('generic').checked = settings.generic;
   $('nicoDanmaku').checked = settings.nicoDanmaku;
   if (document.activeElement !== $('exclude')) $('exclude').value = settings.exclude.join('\n');
+  if (document.activeElement !== $('sites')) $('sites').value = settings.sites.join('\n');
   if (tabHost) {
     $('siteRow').hidden = false;
     const hit = excludeHit(tabHost); // 親のホスト（proton.me など）で入っているときは、その行を相手にする
@@ -54,7 +57,10 @@ async function refreshStats() {
   const s = r.stats;
   const usd = (s.inTok / 1e6) * PRICE_PER_MTOK;
   $('stats').textContent = `隠した投稿 ${s.hidden} 件 ・ jev への問い合わせ ${s.calls} 件 ・ 入力 ${s.inTok.toLocaleString()} トークン（約 $${usd.toFixed(4)}）・ キャッシュ ${r.cached} 件`;
-  const off = !settings.enabled ? '右上の「有効」がオフなので、いまは何も判定していません。' : tabHost && excludeHit(tabHost) ? 'このサイトは「使わないサイト」に入っているので、ここでは判定しません。' : '';
+  const inSites = (h) => settings.sites.some((x) => x && (h === x || h.endsWith('.' + x)));
+  const off = !settings.enabled ? '右上の「有効」がオフなので、いまは何も判定していません。'
+    : tabHost && excludeHit(tabHost) ? 'このサイトは「使わないサイト」に入っているので、ここでは判定しません。'
+      : tabHost && !settings.generic && !inSites(tabHost) ? 'このサイトは「使うサイト」に入っていないので、ここでは判定しません。' : '';
   $('off').textContent = off;
   const rest = (ms) => (ms >= 3600e3 ? `約 ${Math.round(ms / 3600e3)} 時間` : ms >= 60e3 ? `約 ${Math.ceil(ms / 60e3)} 分` : `${Math.ceil(ms / 1000)} 秒`);
   $('err').textContent = [s.errors ? `失敗 ${s.errors} 件` : '', r.pauseMsg || s.lastError, r.paused ? `（あと${rest(r.paused)}休み）` : ''].filter(Boolean).join(' ');
@@ -78,6 +84,7 @@ refreshStats();
 setInterval(refreshStats, 1500); // 開いているあいだ数字を追う
 chrome.storage.onChanged.addListener((ch, area) => { if (area === 'local' && ch.settings) { settings = mergeSettings(ch.settings.newValue); show(); refreshStats(); } });
 
+$('agree').onclick = () => save({ consent: true }).then(show);
 $('enabled').onchange = (e) => save({ enabled: e.target.checked });
 // ポップアップは外を押すと消える（そのとき change は来ない）ので、打つ手が止まったら保存する。途中の値は保存しない。
 const timers = {};
@@ -103,6 +110,9 @@ let committed = null;
 $('exclude').onfocus = () => { committed = settings.exclude; };
 $('exclude').oninput = (e) => later('exclude', () => save({ exclude: [...new Set([...(committed || settings.exclude), ...excludeOf(e.target.value)])] }));
 $('exclude').onchange = (e) => { now('exclude'); committed = null; save({ exclude: excludeOf(e.target.value) }).then(show); };
+// 使うサイト: 打っている途中は保存せず、欄を離れたとき・手が止まったときに保存（消せるように、足すだけにはしない）
+$('sites').oninput = (e) => later('sites', () => save({ sites: excludeOf(e.target.value) }));
+$('sites').onchange = (e) => { now('sites'); save({ sites: excludeOf(e.target.value) }).then(show); };
 $('siteOff').onchange = (e) => {
   const name = excludeHit(tabHost) || tabHost;
   const rest = settings.exclude.filter((x) => x !== name);

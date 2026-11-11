@@ -13,6 +13,19 @@ globalThis.JEV_DEFAULT_EXCLUDE = [
   'mufg.jp', 'smbc.co.jp', 'mizuhobank.co.jp', 'sbisec.co.jp', 'monex.co.jp', 'rakuten-sec.co.jp',
   'smbc-card.com', 'rakuten-card.co.jp', 'saisoncard.co.jp', 'nta.go.jp', 'nenkin.go.jp',
 ];
+// 既定の「使うサイト」。投稿 1 件を正確に取る規則がある所（content.js の SITES）。ここに足したホストは、規則が無くても自動検出で使う。
+// 新しく足すときは末尾に（siSeen を持つ人にも届く）。
+globalThis.JEV_DEFAULT_SITES = [
+  'x.com', 'twitter.com', 'bsky.app', 'youtube.com', 'nicovideo.jp', 'reddit.com', 'news.yahoo.co.jp',
+  '5ch.net', '5ch.io', 'open2ch.net', 'news.ycombinator.com', 'threads.com', 'threads.net', 'togetter.com',
+];
+globalThis.jevSites = (s) => {
+  const D = globalThis.JEV_DEFAULT_SITES;
+  if (!s || !Array.isArray(s.sites)) return D;
+  const seen = new Set(Array.isArray(s.siSeen) ? s.siSeen : D);
+  const add = D.filter((h) => !seen.has(h) && !s.sites.includes(h));
+  return add.length ? [...s.sites, ...add] : s.sites;
+};
 // 既定のしきい値。3.0.1 までは 0.7 だった。設定は丸ごと保存されるので、保存済みの 0.7 が「既定のまま」か「自分で選んだ」かは
 // 区別できない。3.0.2 からは、つまみを動かしたときに thUser の印を付ける。印の無い 0.7 は既定のままと見なして、新しい既定に合わせる。
 globalThis.JEV_THRESHOLD = 0.5;
