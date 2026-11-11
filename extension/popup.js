@@ -129,6 +129,7 @@ $('forget').onclick = async () => { await chrome.storage.local.remove('apiKey');
 $('test').onclick = async () => {
   const text = $('testText').value.trim();
   if (!text) return;
+  if (!settings.enabled) { $('testOut').textContent = 'オフの間は判定しません（右上の「有効」を入れてください）'; return; }
   $('testOut').textContent = '判定中…';
   const r = await chrome.runtime.sendMessage({ type: 'test', text });
   if (!r || r.error) { $('testOut').textContent = (r && r.error) || '応答なし'; refreshStats(); return; }

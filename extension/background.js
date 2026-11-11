@@ -284,6 +284,9 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   if (msg.type === 'judge' || msg.type === 'test') {
     const fromPage = msg.type === 'judge';
     load().then(() => {
+      // オフの間・同意の前は、ポップアップの「文で試す」も含めて一切送らない
+      if (!settings.consent) throw new Stop('はじめの説明への同意が必要です');
+      if (!settings.enabled) throw new Stop('オフの間は判定しません');
       if (fromPage && senderBlocked(sender)) throw new Stop('このページでは使わない設定です');
       return judge(String(msg.text || ''), fromPage, !!msg.low);
     }).then((scores) => reply({ scores }), (e) => reply({ error: e.message, fatal: !!e.fatal }));
