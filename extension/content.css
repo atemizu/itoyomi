@@ -1,0 +1,19 @@
+/* 目隠しの見た目。generic.js の CSS と同じ規則（そちらはシャドウ DOM 用）。変えるときは両方。 */
+[data-jevh="remove"] { display: none !important; }
+[data-jevh="collapse"] { font-size: 0 !important; line-height: 0 !important; letter-spacing: 0 !important; word-spacing: 0 !important; text-indent: 0 !important; min-height: 0 !important; cursor: pointer !important; }
+[data-jevh="collapse"] > :not([data-jevk]) { display: none !important; }
+[data-jevh="collapse"] > [data-jevk] { font-size: var(--jev-fs, 1rem) !important; line-height: var(--jev-lh, normal) !important; letter-spacing: normal !important; word-spacing: normal !important; cursor: auto !important; }
+[data-jevh="collapse"]::before { all: initial !important; content: attr(data-jevh-label) !important; display: block !important; box-sizing: border-box !important; contain: inline-size !important; flex: 1 1 0% !important; -webkit-box-flex: 1 !important; min-width: 0 !important; grid-column: 1 / -1 !important; padding: 6px 10px !important; font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif !important; color: rgb(113, 118, 123) !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; cursor: pointer !important; }
+[data-jevh="collapse"]:hover::before { color: rgb(29, 155, 240) !important; }
+[data-jevh="collapse"]::after, [data-jevh="collapse"]::marker { content: none !important; }
+[data-jevh="collapse"]::first-letter, [data-jevh="collapse"]::first-line { all: unset !important; }
+[data-jevh="collapse"][data-jevc]::before { padding: 2px 10px !important; font-size: 11px !important; }
+
+/* サイト別の後始末（跡形なく消すとき、殻や見出しが残らないように） */
+shreddit-comment:has(> [slot="comment"][data-jevh="remove"]) > :not(shreddit-comment):not([slot^="children"]) { display: none !important; }
+dt:has(+ dd[data-jevh="remove"]), dd.st-bbs_resbody[data-jevh="remove"] + dd.res_reaction { display: none !important; }
+tr.athing.comtr:has(td.default[data-jevh="remove"]) { display: none !important; }
+ytd-comment-thread-renderer:has(> #comment-container > ytd-comment-view-model[data-jevh="remove"]):not(:has(#replies ytd-comment-view-model)) { display: none !important; }
+#comment-main li:has(> article[data-jevh="remove"]) { display: none !important; }
+div:has(> div > div[data-decoration-video-id][data-jevh="remove"]:only-child) { display: none !important; }
+.status__wrapper:has(> .status[data-jevh="remove"]) { display: none !important; }

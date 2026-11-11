@@ -1,0 +1,23 @@
+{
+  "name": "jev-relay",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  // 本文を残さない方針なので、リクエストのログ・トレースは保存しない
+  "observability": { "enabled": false },
+  "durable_objects": { "bindings": [{ "name": "METER", "class_name": "Meter" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Meter"] }],
+  "vars": {
+    // 止めるときは "0" にして deploy（ダッシュボードの Variables から直してもよい）
+    "ENABLED": "1",
+    // 1 人（インストール 1 つ）の 1 日の上限（米ドル）
+    "PER_ID_USD": "0.1",
+    // 同じ IP からの合計の上限（ID を作り直す回避への備え。会社・学校の共用 IP も想定）
+    "PER_IP_USD": "0.5",
+    // 同じ IP から 1 日に使える新しい ID の数
+    "MAX_IDS_PER_IP": "10",
+    "PRICE_PER_MTOK": "0.042",
+    "UPSTREAM": "https://api.typesafe.ai/v1/systemone"
+  }
+}

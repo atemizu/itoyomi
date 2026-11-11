@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "itoyomi",
+  "description": "ネット上の攻撃・煽り・口論の文を AI が意図で見分けて隠します。判定には TypeSafe の jev を使います。実験として開発者が利用料を負担中（予告なく終了することがあります）。",
+  "version": "3.0.0",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://api.typesafe.ai/*",
+    "https://jev-relay.ktjz8fmk7w.workers.dev/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "defaults.js",
+        "generic.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true,
+      "match_about_blank": true
+    },
+    {
+      "matches": [
+        "https://www.nicovideo.jp/*"
+      ],
+      "js": [
+        "nico-main.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "minimum_chrome_version": "120"
+}

@@ -1,0 +1,30 @@
+{
+  "QUESTIONS": {
+    "attack": {
+      "type": "noul",
+      "instructions": "The content is one post or comment from the web (any language). Is the author using this text to hurt, humiliate, or drive away another person or a group of people?",
+      "criteria": {
+        "true": "The author's aim is to put a target down: a sincere insult, contempt, mockery or sarcastic praise meant to make someone look worthless, wishing them harm, a threat, or telling them to shut up, leave or disappear. Polite, indirect or clean wording still counts when that aim is there.",
+        "false": "The author is doing something else, even with harsh or vulgar words: an amused story or news about someone's blunder or crime, swearing for emphasis, venting about a situation, self-deprecation or putting oneself down, affectionate teasing between friends, blunt sincere criticism of a work, idea or action, or quoting or describing hostility that came from someone else."
+      }
+    },
+    "divisive": {
+      "type": "noul",
+      "instructions": "The content is one post or comment from the web (any language). Is the author trying to turn readers against a person or a group of people?",
+      "criteria": {
+        "true": "The author is recruiting readers into hostility: urging them to hate, shun, punish, mass-report or pile on someone, telling them they should be outraged and should spread it, or presenting a whole group as bad, dangerous or an enemy. Calm, clean wording still counts.",
+        "false": "The author is informing, sharing or reacting, even when the topic is dark or the tone is rough: news or an amused anecdote about a crime or a wrongdoer, venting, sadness or self-deprecation about oneself, a strong opinion about an issue, a joke with no enemy, or describing a conflict or hostility that the author only observed or received."
+      }
+    },
+    "quarrel": {
+      "type": "noul",
+      "instructions": "The content is one post or comment from the web (any language). Is the author trying to belittle, provoke, or silence the person they are addressing?",
+      "criteria": {
+        "true": "The text is aimed at the other person in an exchange and is meant to beat them rather than discuss: taunting, sneering at their intelligence or motives, talking down, daring them to respond, or telling them their voice is not wanted. Formally polite wording still counts.",
+        "false": "Ordinary talk or sincere disagreement, even when blunt or foul-mouthed: a correction or counter-argument about the point itself, a real question, playful teasing the other person is expected to enjoy, excited swearing, self-deprecation, or a story, joke or remark that is not directed at an opponent."
+      }
+    }
+  },
+  "MAX_TEXT": 3000,
+  "QUESTION_VERSION": "q2"
+}

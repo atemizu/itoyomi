@@ -1,0 +1,9 @@
+.DS_Store
+*.zip
+node_modules/
+.wrangler/
+.dev.vars
+extension/.scout/
+extension/test/live/
+extension/icons/*.psd
+relay/store/
