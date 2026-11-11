@@ -10,6 +10,8 @@ itoyomi（以下「本拡張機能」）は、ウェブページ上の攻撃・�
 
 ## 1. 送信するデータ
 
+インストール後、最初に送るものと送り先を表示して同意を求めます。「同意して始める」を押すまで、文は一切送りません。
+
 判定のため、開いているページのうち画面の近く（上下 1 画面ぶん）にある投稿・段落の文（1 件あたり最大 3,000 字）を送信します。
 
 - **無料枠（API キー未設定・既定）**: 開発者が運営する中継（Cloudflare Workers、`jev-relay.ktjz8fmk7w.workers.dev`）を経由して、TypeSafe（`api.typesafe.ai`）に送信します。
@@ -39,6 +41,8 @@ itoyomi（以下「本拡張機能」）は、ウェブページ上の攻撃・�
 
 データの販売、広告への利用、判定以外の目的での利用はしません。
 
+本拡張機能によるユーザーデータの利用は、[Chrome Web Store ユーザーデータに関するポリシー](https://developer.chrome.com/docs/webstore/program-policies/user-data-faq)（Limited Use の要件を含む）に従います。
+
 ## 5. 対象外にするサイト
 
 メール・チャット・AI チャット・銀行・証券・納税などのサイトは、既定で「使わないサイト」に入れてあり、文を送りません。それ以外のサイトでも、パスワード欄のあるページや銀行・ログインらしいホスト名は自動で避けますが、すべてを見分けられるわけではありません。見られたくない文が出るサイトは、設定の「使わないサイト」に追加してください。
@@ -55,4 +59,4 @@ itoyomi（以下「本拡張機能」）は、ウェブページ上の攻撃・�
 
 ## English summary
 
-itoyomi sends text near the visible area of the page (up to 3,000 characters per item) to TypeSafe (`api.typesafe.ai`) to judge whether it is hostile. By default the text passes through a relay run by the developer on Cloudflare Workers; the relay does not store or log the text. With your own API key, text goes directly to TypeSafe. No URLs, titles, cookies, form inputs or separate author metadata are sent, though personal information contained in the text itself is sent as part of it. The relay uses a random install ID and a daily hashed IP value only to enforce daily limits and deletes them within about 36 hours. Settings and caches stay in your browser. Data is never sold or used for advertising. The free tier is an experiment funded by the developer and may end without notice. Contact: <https://github.com/atemizu/itoyomi/issues>
+itoyomi sends text near the visible area of the page (up to 3,000 characters per item) to TypeSafe (`api.typesafe.ai`) to judge whether it is hostile. By default the text passes through a relay run by the developer on Cloudflare Workers; the relay does not store or log the text. With your own API key, text goes directly to TypeSafe. No URLs, titles, cookies, form inputs or separate author metadata are sent, though personal information contained in the text itself is sent as part of it. The relay uses a random install ID and a daily hashed IP value only to enforce daily limits and deletes them within about 36 hours. Settings and caches stay in your browser. Data is never sold or used for advertising. The use of information received from this extension adheres to the Chrome Web Store User Data Policy, including the Limited Use requirements. Nothing is sent until you press "Agree and start" after installation. The free tier is an experiment funded by the developer and may end without notice. Contact: <https://github.com/atemizu/itoyomi/issues>
