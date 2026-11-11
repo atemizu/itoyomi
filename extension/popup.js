@@ -1,4 +1,4 @@
-import { DEFAULTS, PRICE_PER_MTOK, mergeSettings, verdict } from './jev.js';
+import { DEFAULTS, PRICE_PER_MTOK, RELAY_DAILY_CAP, mergeSettings, verdict } from './jev.js';
 
 const $ = (id) => document.getElementById(id);
 const LABEL = { attack: '攻撃・侮辱', divisive: '煽り・分断', quarrel: '口論' };
@@ -12,13 +12,22 @@ async function save(patch) {
   await chrome.storage.local.set({ settings });
 }
 
+// 1 日の上限の欄は、いま実際に効いている数を出す（無料枠では中継に合わせた上限まで）
+let freeTier = null; // 背景に聞くまで分からない
+function showLimit() {
+  const capped = freeTier && settings.dailyLimit > RELAY_DAILY_CAP;
+  if (document.activeElement !== $('dailyLimit')) $('dailyLimit').value = capped ? RELAY_DAILY_CAP : settings.dailyLimit;
+  $('limitNote').textContent = !freeTier ? ''
+    : capped ? `無料枠の上限は 1 日 ${RELAY_DAILY_CAP} 件です（これより減らすことはできます。自分のキーを入れると ${settings.dailyLimit} 件になります）。`
+      : `無料枠の上限は 1 日 ${RELAY_DAILY_CAP} 件です。`;
+}
 function show() {
   $('enabled').checked = settings.enabled;
   if (document.activeElement !== $('model')) $('model').value = settings.model;
   $('threshold').value = settings.threshold;
   $('thv').textContent = `${Math.round(settings.threshold * 100)}%`;
   $('mode').value = settings.mode;
-  if (document.activeElement !== $('dailyLimit')) $('dailyLimit').value = settings.dailyLimit;
+  showLimit();
   for (const el of document.querySelectorAll('[data-cat]')) el.checked = !!settings.cats[el.dataset.cat];
   $('generic').checked = settings.generic;
   $('nicoDanmaku').checked = settings.nicoDanmaku;
@@ -53,7 +62,7 @@ async function refreshStats() {
   $('route').textContent = free
     ? `いまのモード: 無料枠（開発者の中継を経由）${typeof r.budget === 'number' ? ` ・ 今日の残り 約 ${Math.round(r.budget * 100)}%` : ''}`
     : 'いまのモード: 自分の API キー（中継は通らず、直接 TypeSafe に送ります）';
-  $('limitNote').textContent = free && settings.dailyLimit > r.limit ? `無料枠のあいだは ${r.limit} 件までです。` : '';
+  freeTier = free; showLimit();
   $('keyState').textContent = r.hasKey
     ? 'キーは保存済みです（この端末の拡張機能の保存領域のみ）。判定は中継を通らず、直接 TypeSafe に送られます。'
     : 'キーは任意です。入れると無料枠の中継を通らず、直接 TypeSafe に送ります（料金はご自身の負担）。';
@@ -79,8 +88,9 @@ $('model').onchange = (e) => now('model') || save({ model: e.target.value.trim()
 $('threshold').oninput = (e) => { save({ threshold: Number(e.target.value) }); $('thv').textContent = `${Math.round(e.target.value * 100)}%`; };
 $('mode').onchange = (e) => save({ mode: e.target.value });
 const limitOf = (v) => { const n = Math.floor(Number(v)); return v.trim() !== '' && Number.isFinite(n) && n > 0 ? n : DEFAULTS.dailyLimit; };
-$('dailyLimit').oninput = (e) => later('limit', () => { if (e.target.value.trim()) save({ dailyLimit: limitOf(e.target.value) }); });
-$('dailyLimit').onchange = (e) => now('limit') || save({ dailyLimit: limitOf(e.target.value) }).then(show);
+const keepLimit = (v) => freeTier && limitOf(v) >= RELAY_DAILY_CAP && settings.dailyLimit >= RELAY_DAILY_CAP; // 無料枠で上限以上を打った: 自分のキー用に取ってある数は変えない
+$('dailyLimit').oninput = (e) => later('limit', () => { if (e.target.value.trim() && !keepLimit(e.target.value)) save({ dailyLimit: limitOf(e.target.value) }); });
+$('dailyLimit').onchange = (e) => now('limit') || (keepLimit(e.target.value) ? Promise.resolve() : save({ dailyLimit: limitOf(e.target.value) })).then(show);
 for (const el of document.querySelectorAll('[data-cat]')) {
   el.onchange = () => save({ cats: { ...settings.cats, [el.dataset.cat]: el.checked } });
 }

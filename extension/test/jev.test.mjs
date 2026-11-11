@@ -195,3 +195,24 @@ test('既定の「使わないサイト」: 新しく足した既定は古い設
   const cur = mergeSettings({ exclude: ['example.com'], exSeen: D }); // 3.0 で保存: 外した既定は戻らない
   assert.deepEqual(cur.exclude, ['example.com']);
 });
+
+// ---- 汎用検出の最小の長さ（短い暴言は拾い、画面の部品の名前は拾わない） ----
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+test('汎用検出: 短い暴言は判定に回し、2〜3 字の部品名は回さない', () => {
+  const src = readFileSync(new URL('../generic.js', import.meta.url), 'utf8');
+  const G = vm.runInNewContext(`${src}; jevGeneric`, {});
+  const CJK = /[぀-ヿ㐀-鿿가-힯ｦ-ﾟ]/;
+  const ok = (text, f = 1) => {
+    if (text.length < G.OPT.minChars) return false;
+    const cjk = CJK.test(text);
+    return G.longEnough(text.replace(/[^\p{L}]/gu, '').length, cjk ? 99 : text.split(/\s+/).length, cjk, f, G.OPT);
+  };
+  for (const t of ['ぶん殴るぞ！！', 'お前消えろ', 'くたばれよ', 'fuck you', 'shut up idiot', 'kill yourself', '了解です', 'ありがとう']) assert.equal(ok(t), true, t);
+  for (const t of ['ホーム', '検索', 'メニュー'.slice(0, 3), '次へ', 'OK', 'Login', 'Sign in', 'Home', 'www', '草']) assert.equal(ok(t), false, t);
+  // 見出し (f = 2.5) とリンクだけの文 (f = 1.6) は今までどおり厳しい
+  assert.equal(ok('ぶん殴るぞ！！', 2.5), false);
+  assert.equal(ok('Read more', 1.6), false);
+  assert.equal(ok('もっと見る', 1.6), false);
+  assert.equal(ok('大臣の発言に批判が相次ぐ', 2.5), true);
+});

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "itoyomi",
   "description": "ネット上の攻撃・煽り・口論の文を AI が意図で見分けて隠します。判定には TypeSafe の jev を使います。実験として開発者が利用料を負担中（予告なく終了することがあります）。",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "permissions": [
     "storage",
     "activeTab"

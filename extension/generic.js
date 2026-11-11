@@ -28,7 +28,11 @@ var jevGeneric = (() => {
   const STRICT = set('td dt figcaption caption');
   const CJK = /[぀-ヿ㐀-鿿가-힯]/;
   const NONWS = /\S/;
-  const OPT = { maxUnit: 1500, maxUnitDirect: 3000, hardMax: 3000, repeatMin: 4, repeatMaxLen: 60, maxText: 3000, minCJK: 8, minLatin: 15, minWords: 3, strictFactor: 2.5, linkTitles: true, classHeuristic: true, checkVisible: true };
+  // 短い暴言（「ぶん殴るぞ！！」= 5 字、"fuck you" = 7 字 2 語）も判定に回す。これより短いもの（2〜3 字）は、
+  // 画面の部品の名前（「ホーム」「検索」）がほとんどなので拾わない。見出し・リンクだけの文は係数 f でさらに厳しくする。
+  const longEnough = (letters, words, cjk, f, opt) =>
+    (cjk ? letters >= opt.minCJK * f : letters >= opt.minLatin * f && words >= opt.minWords + (f > 1 ? 1 : 0));
+  const OPT = { maxUnit: 1500, maxUnitDirect: 3000, hardMax: 3000, repeatMin: 4, repeatMaxLen: 60, maxText: 3000, minCJK: 4, minLatin: 7, minWords: 2, minChars: 4, strictFactor: 2.5, linkTitles: true, classHeuristic: true, checkVisible: true };
 
   const blockCache = new WeakMap();
   function isBlock(e) {
@@ -156,7 +160,7 @@ var jevGeneric = (() => {
     }
     const out = [];
     for (const g of units.values()) {
-      if (g.n < 8 || g.n > opt.hardMax || NEVER_UNIT.has(g.el.localName)) continue;
+      if (g.n < opt.minChars || g.n > opt.hardMax || NEVER_UNIT.has(g.el.localName)) continue;
       let text = g.texts.join('\n').replace(/[ \t]*\n[ \t\n]*/g, '\n').replace(/ {2,}/g, ' ').trim();
       const letters = text.replace(/[^\p{L}]/gu, '').length;
       const cjk = CJK.test(text);
@@ -168,7 +172,7 @@ var jevGeneric = (() => {
         if (!opt.linkTitles || g.top / g.n < 0.6) continue;
         f = Math.max(f, 1.6);
       } else if (ld >= 0.6 && g.links >= 3) continue;
-      if (cjk ? letters < opt.minCJK * f : (letters < opt.minLatin * f || words < opt.minWords + (f > 1 ? 1 : 0))) continue;
+      if (!longEnough(letters, words, cjk, f, opt)) continue;
       if (letters / text.replace(/\s/g, '').length < 0.5) continue;
       // 自分で display:none にした要素は「見えない」扱いにしない（外しては隠し直す、の往復を防ぐ）
       if (opt.checkVisible && g.el.getAttribute('data-jevh') !== 'remove') {
@@ -306,5 +310,5 @@ var jevGeneric = (() => {
     return { stop() { mo.disconnect(); clearTimeout(timer); }, flush };
   }
 
-  return { findBlocks, watch, hide, unhide, installCss, CSS };
+  return { findBlocks, watch, hide, unhide, installCss, CSS, longEnough, OPT };
 })();
