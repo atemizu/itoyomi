@@ -30,6 +30,8 @@ itoyomi（以下「本拡張機能」）は、ウェブページ上の攻撃・�
 
 これらはその日の利用量の管理にだけ使い、約 36 時間で消去します。
 
+Chrome ウェブストアのページで、本拡張機能が「位置情報」を扱うと表示されているのは、このためです。IP アドレスは 1 日の上限の管理だけに使い、地域の推定など位置を知る目的には使いません。
+
 ## 3. 端末内に保存するデータ
 
 設定、今日の利用件数、API キー（任意）、上記のランダムな ID、判定結果の覚え書き（文のハッシュと点数）は、お使いのブラウザの中（`chrome.storage.local` と IndexedDB）にだけ保存し、開発者には送りません。
@@ -59,4 +61,4 @@ itoyomi（以下「本拡張機能」）は、ウェブページ上の攻撃・�
 
 ## English summary
 
-itoyomi sends text near the visible area of the page (up to 3,000 characters per item) to TypeSafe (`api.typesafe.ai`) to judge whether it is hostile. By default the text passes through a relay run by the developer on Cloudflare Workers; the relay does not store or log the text. With your own API key, text goes directly to TypeSafe. No URLs, titles, cookies, form inputs or separate author metadata are sent, though personal information contained in the text itself is sent as part of it. The relay uses a random install ID and a daily hashed IP value only to enforce daily limits and deletes them within about 36 hours. Settings and caches stay in your browser. Data is never sold or used for advertising. The use of information received from this extension adheres to the Chrome Web Store User Data Policy, including the Limited Use requirements. Nothing is sent until you press "Agree and start" after installation. The free tier is an experiment funded by the developer and may end without notice. Contact: <https://github.com/atemizu/itoyomi/issues>
+itoyomi sends text near the visible area of the page (up to 3,000 characters per item) to TypeSafe (`api.typesafe.ai`) to judge whether it is hostile. By default the text passes through a relay run by the developer on Cloudflare Workers; the relay does not store or log the text. With your own API key, text goes directly to TypeSafe. No URLs, titles, cookies, form inputs or separate author metadata are sent, though personal information contained in the text itself is sent as part of it. The relay uses a random install ID and a daily hashed IP value only to enforce daily limits and deletes them within about 36 hours. This is why the Chrome Web Store page lists "location" data: the IP address is used only for daily limits, never to determine your location. Settings and caches stay in your browser. Data is never sold or used for advertising. The use of information received from this extension adheres to the Chrome Web Store User Data Policy, including the Limited Use requirements. Nothing is sent until you press "Agree and start" after installation. The free tier is an experiment funded by the developer and may end without notice. Contact: <https://github.com/atemizu/itoyomi/issues>
